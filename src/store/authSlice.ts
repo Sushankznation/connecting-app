@@ -1,66 +1,48 @@
-import { createSlice, PayloadAction, createAsyncThunk, Action, SerializedError } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { supabase } from '../supabaseClient';
 
-interface UserState {
+interface AuthState {
   user: any | null;
   loading: boolean;
   error: string | null;
 }
 
-const initialState: UserState = {
+const initialState: AuthState = {
   user: null,
   loading: false,
   error: null,
 };
 
-// Async thunk for checking user session
- const checkUserSession = createAsyncThunk('auth/checkUserSession', async () => {
+// Async thunk for checking if a user session exists
+const checkUserSession = createAsyncThunk('auth/checkUserSession', async () => {
   const { data } = await supabase.auth.getUser();
   return data.user;
 });
 
-// Async thunk for signing in
- const signIn = createAsyncThunk<any, { email: string; password: string }, { rejectValue: string }>(
+// Async thunks for signing in, signing up, and signing out (already defined)
+const signIn = createAsyncThunk(
   'auth/signIn',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      if (error.message === 'Email not confirmed') {
-        return rejectWithValue('Please confirm your email before logging in.');
-      }
-      return rejectWithValue(error.message);
-    }
+    if (error) return rejectWithValue(error.message);
     return data.user;
   }
 );
 
-// Async thunk for signing up
- const signUp = createAsyncThunk<any, { email: string; password: string }, { rejectValue: string }>(
+const signUp = createAsyncThunk(
   'auth/signUp',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      return rejectWithValue(error.message);
-    }
+    if (error) return rejectWithValue(error.message);
     return data.user;
   }
 );
 
-// Async thunk for signing out
- const signOut = createAsyncThunk<void, void, { rejectValue: string }>(
-  'auth/signOut',
-  async (_, { rejectWithValue }) => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Type guard for handling errors in rejected actions
-function isRejectedWithError(action: Action): action is Action & { error: SerializedError } {
-  return action.type.endsWith('/rejected') && 'error' in action;
-}
+const signOut = createAsyncThunk('auth/signOut', async (_, { rejectWithValue }) => {
+  const { error } = await supabase.auth.signOut();
+  if (error) return rejectWithValue(error.message);
+  return null;
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -73,35 +55,35 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = null;
       })
-      .addCase(signIn.fulfilled, (state, action: PayloadAction<any | null>) => {
-        state.user = action.payload;
-        state.loading = false;
+      .addCase(signIn.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(signUp.fulfilled, (state, action: PayloadAction<any | null>) => {
+      .addCase(signIn.fulfilled, (state, action) => {
         state.user = action.payload;
         state.loading = false;
+      })
+      .addCase(signIn.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(signUp.pending, (state) => {
+        state.loading = true;
         state.error = null;
+      })
+      .addCase(signUp.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.loading = false;
+      })
+      .addCase(signUp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       })
       .addCase(signOut.fulfilled, (state) => {
         state.user = null;
         state.loading = false;
         state.error = null;
-      })
-      .addMatcher(
-        (action) => action.type.endsWith('/pending'),
-        (state) => {
-          state.loading = true;
-          state.error = null;
-        }
-      )
-      .addMatcher(
-        isRejectedWithError,
-        (state, action) => {
-          state.loading = false;
-          state.error = action.error.message || 'Something went wrong';
-        }
-      );
+      });
   },
 });
 

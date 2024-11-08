@@ -47,3 +47,19 @@ export const UNFOLLOW_USER = gql`
     }
   }
 `;
+
+export const GET_POSTS = gql`
+  query GetPosts($first: Int!, $offset: Int!) {
+    postsCollection(first: $first, offset: $offset) {
+      edges {
+        node {
+          id
+          content
+          created_at
+          user_id
+          image_url
+        }
+      }
+    }
+  }
+`;

@@ -1,18 +1,19 @@
+// src/App.tsx
 import React, { useEffect } from 'react';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ApolloProvider } from '@apollo/client';
 import { useAppDispatch, useAppSelector } from './store/hooks';
+import client from './apolloClient';
 import { checkUserSession } from './store/authSlice';
 import Auth from './Auth';
+import NewsFeed from './NewsFeed';
 
-const client = new ApolloClient({
-  uri: `${import.meta.env.VITE_SUPABASE_URL}/graphql/v1`,
-  headers: {
-    apiKey: import.meta.env.VITE_SUPABASE_ANON_KEY as string,
-  },
-  cache: new InMemoryCache(),
-});
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const user = useAppSelector((state) => state.auth.user);
+  return user ? <>{children}</> : <Navigate to="/auth" />;
+};
 
-function App() {
+const App: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
 
@@ -22,16 +23,22 @@ function App() {
 
   return (
     <ApolloProvider client={client}>
-      {user ? (
-        <div>
-          <h1>Welcome, {user.email}</h1>
-          {/* Your main app components go here */}
-        </div>
-      ) : (
-        <Auth />
-      )}
+      <Router>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route
+            path="/news-feed"
+            element={
+              <ProtectedRoute>
+                <NewsFeed />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to={user ? "/news-feed" : "/auth"} />} />
+        </Routes>
+      </Router>
     </ApolloProvider>
   );
-}
+};
 
 export default App;

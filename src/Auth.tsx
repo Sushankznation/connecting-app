@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+// src/Auth.tsx
+import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { signIn, signUp, signOut } from './store/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Auth: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { user, loading, error } = useAppSelector((state) => state.auth);
 
   const [email, setEmail] = useState('');
@@ -18,9 +21,16 @@ const Auth: React.FC = () => {
     }
   };
 
+  // Redirect to the protected page if the user is logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/protected');
+    }
+  }, [user, navigate]);
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-lg">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center text-gray-800">
           {authMode === 'signIn' ? 'Login' : 'Sign Up'}
         </h2>
@@ -30,14 +40,14 @@ const Auth: React.FC = () => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           {loading && <p className="text-center text-blue-600">Loading...</p>}
           {error && <p className="text-center text-red-600">{error}</p>}
