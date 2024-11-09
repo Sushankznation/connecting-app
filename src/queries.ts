@@ -85,38 +85,3 @@ export const GET_USERS = gql`
   }
 `;
 
-
-export const GET_FOLLOWED_USER_IDS = gql`
-  query GetFollowedUserIds($followerId: uuid!) {
-    followsCollection(where: { follower_id: { _eq: $followerId } }) {
-      edges {
-        node {
-          followed_id
-        }
-      }
-    }
-  }
-`;
-
-// Query to get posts from a list of followed user IDs
-export const GET_FOLLOWED_USER_POSTS = gql`
-  query GetFollowedUserPosts($followedIds: [uuid!]!) {
-    postsCollection(
-      where: { user_id: { _in: $followedIds } }
-      order_by: { created_at: desc }
-    ) {
-      edges {
-        node {
-          id
-          content
-          created_at
-          image_url
-          user {
-            id
-            username
-          }
-        }
-      }
-    }
-  }
-`;

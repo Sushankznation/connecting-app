@@ -23,6 +23,7 @@ const NewsFeed: React.FC<{ userId: string }> = ({ userId }) => {
       .from('follows')
       .select('followed_id')
       .eq('follower_id', userId);
+      console.log("Followed Users:", followsData);
 
     if (followsError) {
       setError('Error loading followed user IDs');
@@ -32,14 +33,19 @@ const NewsFeed: React.FC<{ userId: string }> = ({ userId }) => {
 
     const followedIds = followsData?.map((follow) => follow.followed_id) || [];
     console.log("Followed User IDs:", followedIds);
-    // Step 2: Fetch posts from followed users using the RPC function
-    const { data: postsData, error: postsError } = await supabase
-      .rpc('get_followed_user_posts', { followed_ids: followedIds });
 
-    if (postsError) {
-      setError('Error loading posts');
+    // Step 2: Fetch posts from followed users using the RPC function
+    if (followedIds.length > 0) {
+      const { data: postsData, error: postsError } = await supabase
+        .rpc('get_followed_user_posts', { followed_ids: followedIds });
+
+      if (postsError) {
+        setError('Error loading posts');
+      } else {
+        setPosts(postsData || []);
+      }
     } else {
-      setPosts(postsData || []);
+      setPosts([]); // No followed users, no posts to show
     }
 
     setLoading(false);
@@ -54,7 +60,10 @@ const NewsFeed: React.FC<{ userId: string }> = ({ userId }) => {
 
   return (
     <div className="space-y-4 p-4">
-      {posts.map((post) => (
+    {posts.length === 0 ? (
+      <p>No posts available. Follow some users to see their posts here.</p>
+    ) : (
+      posts.map((post) => (
         <div key={post.id} className="p-4 bg-white rounded-lg shadow-md border border-gray-200">
           <h3 className="text-lg font-semibold">{post.content}</h3>
           <p className="text-gray-500">{new Date(post.created_at).toLocaleString()}</p>
@@ -63,8 +72,9 @@ const NewsFeed: React.FC<{ userId: string }> = ({ userId }) => {
           )}
           <p className="text-gray-600">Posted by: {post.user_id}</p>
         </div>
-      ))}
-    </div>
+      ))
+    )}
+  </div>
   );
 };
 
