@@ -5,10 +5,10 @@ import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { useAppDispatch, useAppSelector } from './store/hooks';
 import { checkUserSession } from './store/authSlice';
 import Auth from './Auth';
-import NewsFeed from './NewsFeed';
-import CreatePostForm from './CreatePostForm';
-import Header from './Header';
-import ErrorBoundary from './ErrorBoundary';
+import NewsFeed from './components/NewsFeed';
+import CreatePostForm from './components/CreatePostForm';
+import Header from './components/Header';
+import ErrorBoundary from './components/ErrorBoundary';
 // import UserList from './UserList';
 
 const client = new ApolloClient({

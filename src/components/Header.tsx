@@ -1,8 +1,8 @@
 // src/Header.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from './store/hooks';
-import { signOut } from './store/authSlice';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { signOut } from '../store/authSlice';
 
 const Header: React.FC = () => {
   const dispatch = useAppDispatch();

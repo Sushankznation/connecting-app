@@ -1,7 +1,7 @@
 // src/FollowButton.tsx
 import React from 'react';
 import { useMutation } from '@apollo/client';
-import { FOLLOW_USER, UNFOLLOW_USER } from './queries';
+import { FOLLOW_USER, UNFOLLOW_USER } from '../queries/queries';
 
 interface FollowButtonProps {
   followerId: string;

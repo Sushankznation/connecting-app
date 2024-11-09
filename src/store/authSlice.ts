@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../queries/supabaseClient';
 
 interface AuthState {
   user: any | null;

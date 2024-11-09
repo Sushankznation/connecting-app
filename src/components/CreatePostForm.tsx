@@ -1,6 +1,6 @@
 // src/CreatePostForm.tsx
 import React, { useState } from 'react';
-import { supabase } from './supabaseClient';
+import { supabase } from '../queries/supabaseClient';
 
 const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
   const [content, setContent] = useState("");
