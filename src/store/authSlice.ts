@@ -19,7 +19,7 @@ const checkUserSession = createAsyncThunk('auth/checkUserSession', async () => {
   return data.user;
 });
 
-// Async thunks for signing in, signing up, and signing out (already defined)
+// Async thunk for signing in
 const signIn = createAsyncThunk(
   'auth/signIn',
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
@@ -29,15 +29,35 @@ const signIn = createAsyncThunk(
   }
 );
 
+// Updated async thunk for signing up, adding profile to `users` table
 const signUp = createAsyncThunk(
   'auth/signUp',
-  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return rejectWithValue(error.message);
-    return data.user;
+  async (
+    { email, password, username, name }: { email: string; password: string; username: string; name: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      // Step 1: Sign up user in Supabase Auth
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+
+      const userId = data.user?.id;
+      if (!userId) throw new Error('User ID not found after sign-up');
+
+      // Step 2: Insert user profile in the custom `users` table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([{ id: userId, username, email, name }]);
+      if (profileError) throw profileError;
+
+      return data.user;
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 
+// Async thunk for signing out
 const signOut = createAsyncThunk('auth/signOut', async (_, { rejectWithValue }) => {
   const { error } = await supabase.auth.signOut();
   if (error) return rejectWithValue(error.message);

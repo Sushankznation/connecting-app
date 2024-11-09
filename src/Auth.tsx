@@ -1,7 +1,6 @@
-// src/Auth.tsx
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from './store/hooks';
-import { signIn, signUp, signOut } from './store/authSlice';
+import { signIn, signUp } from './store/authSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Auth: React.FC = () => {
@@ -11,67 +10,87 @@ const Auth: React.FC = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [authMode, setAuthMode] = useState<'signIn' | 'signUp'>('signIn');
+
+  useEffect(() => {
+    if (user) {
+      // Redirect to news-feed if user is authenticated
+      navigate('/news-feed');
+    }
+  }, [user, navigate]);
 
   const handleAuthAction = () => {
     if (authMode === 'signIn') {
       dispatch(signIn({ email, password }));
     } else {
-      dispatch(signUp({ email, password }));
+      dispatch(signUp({ email, password, username, name }));
     }
   };
 
-  // Redirect to the protected page if the user is logged in
-  useEffect(() => {
-    if (user) {
-      navigate('/protected');
-    }
-  }, [user, navigate]);
-
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-4">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-gray-800">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">
           {authMode === 'signIn' ? 'Login' : 'Sign Up'}
         </h2>
-        <div className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {loading && <p className="text-center text-blue-600">Loading...</p>}
-          {error && <p className="text-center text-red-600">{error}</p>}
-        </div>
+        
+        {error && (
+          <p className="text-red-600 text-sm text-center mb-4">{error}</p>
+        )}
+
+        {authMode === 'signUp' && (
+          <>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </>
+        )}
+        
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        
         <button
           onClick={handleAuthAction}
-          className="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+          disabled={loading}
         >
-          {authMode === 'signIn' ? 'Log In' : 'Sign Up'}
+          {loading ? 'Loading...' : authMode === 'signIn' ? 'Log In' : 'Sign Up'}
         </button>
-        <button
-          onClick={() => setAuthMode(authMode === 'signIn' ? 'signUp' : 'signIn')}
-          className="w-full px-4 py-2 font-semibold text-blue-600 bg-transparent border border-blue-600 rounded-lg hover:bg-blue-50"
-        >
-          {authMode === 'signIn' ? 'Switch to Sign Up' : 'Switch to Login'}
-        </button>
-        {user && (
+        
+        <div className="text-center mt-4">
           <button
-            onClick={() => dispatch(signOut())}
-            className="w-full px-4 py-2 font-semibold text-red-600 bg-transparent border border-red-600 rounded-lg hover:bg-red-50"
+            onClick={() => setAuthMode(authMode === 'signIn' ? 'signUp' : 'signIn')}
+            className="text-blue-600 hover:underline font-medium"
           >
-            Sign Out
+            {authMode === 'signIn' ? 'Switch to Sign Up' : 'Switch to Login'}
           </button>
-        )}
+        </div>
       </div>
     </div>
   );

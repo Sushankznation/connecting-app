@@ -1,76 +1,69 @@
-// src/NewsFeed.tsx
-import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_POSTS } from './queries';
+import React, { useEffect, useState } from 'react';
+import { supabase } from './supabaseClient';
 
-const POST_LIMIT = 10;
+interface Post {
+  id: string;
+  content: string;
+  created_at: string;
+  image_url?: string;
+  user_id: string;
+}
 
-const NewsFeed: React.FC = () => {
-  const [offset, setOffset] = useState(0);
-  const { loading, error, data, fetchMore } = useQuery(GET_POSTS, {
-    variables: { first: POST_LIMIT, offset: 0 },
-  });
+const NewsFeed: React.FC<{ userId: string }> = ({ userId }) => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const fetchFollowedPosts = async () => {
+    setLoading(true);
+    setError(null);
 
-  const loadMorePosts = useCallback(() => {
-    if (data?.postsCollection?.edges) {
-      fetchMore({
-        variables: {
-          offset: data.postsCollection.edges.length,
-        },
-      });
+    // Step 1: Fetch the IDs of users that the current user follows
+    const { data: followsData, error: followsError } = await supabase
+      .from('follows')
+      .select('followed_id')
+      .eq('follower_id', userId);
+
+    if (followsError) {
+      setError('Error loading followed user IDs');
+      setLoading(false);
+      return;
     }
-  }, [fetchMore, data?.postsCollection?.edges?.length]);
+
+    const followedIds = followsData?.map((follow) => follow.followed_id) || [];
+    console.log("Followed User IDs:", followedIds);
+    // Step 2: Fetch posts from followed users using the RPC function
+    const { data: postsData, error: postsError } = await supabase
+      .rpc('get_followed_user_posts', { followed_ids: followedIds });
+
+    if (postsError) {
+      setError('Error loading posts');
+    } else {
+      setPosts(postsData || []);
+    }
+
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMorePosts();
-        }
-      },
-      { threshold: 1 }
-    );
+    fetchFollowedPosts();
+  }, [userId]);
 
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
-      }
-    };
-  }, [loadMorePosts]);
-
-  if (loading && offset === 0) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-
-  // Handle cases where no data is returned
-  if (!data?.postsCollection?.edges || data.postsCollection.edges.length === 0) {
-    return <p>No posts available</p>;
-  }
+  if (loading) return <div>Loading posts...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
-    <div className="max-w-xl mx-auto p-4 space-y-4">
-      <h2 className="text-2xl font-bold text-center mb-4">News Feed</h2>
-      {data.postsCollection.edges.map(({ node }: any) => (
-        <div key={node.id} className="p-4 bg-white rounded-lg shadow">
-          <h3 className="font-semibold text-lg">User: {node.user_id}</h3>
-          <p className="text-gray-700 mt-2">{node.content}</p>
-          {node.image_url && (
-            <img
-              src={node.image_url}
-              alt="Post"
-              className="w-full h-auto rounded mt-4"
-            />
+    <div className="space-y-4 p-4">
+      {posts.map((post) => (
+        <div key={post.id} className="p-4 bg-white rounded-lg shadow-md border border-gray-200">
+          <h3 className="text-lg font-semibold">{post.content}</h3>
+          <p className="text-gray-500">{new Date(post.created_at).toLocaleString()}</p>
+          {post.image_url && (
+            <img src={post.image_url} alt="Post Image" className="w-full h-auto mt-2 rounded" />
           )}
-          <p className="text-xs text-gray-500 mt-1">{new Date(node.created_at).toLocaleString()}</p>
+          <p className="text-gray-600">Posted by: {post.user_id}</p>
         </div>
       ))}
-      <div ref={loadMoreRef} className="h-12"></div>
-      {loading && <p>Loading more posts...</p>}
     </div>
   );
 };
