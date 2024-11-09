@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../queries/supabaseClient';
+import UserList from './UserList';
 
 interface Post {
   id: string;
@@ -59,6 +60,7 @@ const NewsFeed: React.FC<{ userId: string }> = ({ userId }) => {
 
   return (
     <div className="space-y-4 p-4">
+       <UserList />
       {posts.length === 0 ? (
         <p>No posts available. Follow some users to see their posts here.</p>
       ) : (
