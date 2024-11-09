@@ -2,9 +2,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
-import { useAppDispatch, useAppSelector } from './store/hooks';
-import { checkUserSession } from './store/authSlice';
-import Auth from './Auth';
+import { useAppDispatch, useAppSelector } from './Auth/hooks';
+import { checkUserSession } from './Auth/authSlice';
+import Auth from './Auth/Auth';
 import NewsFeed from './components/NewsFeed';
 import CreatePostForm from './components/CreatePostForm';
 import Header from './components/Header';

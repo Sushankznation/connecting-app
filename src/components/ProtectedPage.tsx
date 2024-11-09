@@ -1,7 +1,7 @@
 // src/ProtectedPage.tsx
 import React from 'react';
-import { useAppDispatch } from '../store/hooks';
-import { signOut } from '../store/authSlice';
+import { useAppDispatch } from '../Auth/hooks';
+import { signOut } from '../Auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 
 const ProtectedPage: React.FC = () => {

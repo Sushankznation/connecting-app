@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from './store/hooks';
-import { signIn, signUp } from './store/authSlice';
+import { useAppDispatch, useAppSelector } from './hooks';
+import { signIn, signUp } from './authSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Auth: React.FC = () => {
