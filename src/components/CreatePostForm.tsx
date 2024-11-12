@@ -10,7 +10,8 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const filePath = `${userId}/${Date.now()}_${file.name}`;
-    const { data, error } = await supabase.storage
+    // const { data, error } = await supabase.storage
+    const {  error } = await supabase.storage
       .from('post-images')
       .upload(filePath, file);
     if (error) {
@@ -33,7 +34,8 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
     }
 
     // Use Supabase client directly to insert a new post into the database
-    const { data, error } = await supabase
+    // const { data, error } = await supabase
+    const {  error } = await supabase
       .from('posts')
       .insert([{ user_id: userId, content, image_url: imageUrl }]);
 
