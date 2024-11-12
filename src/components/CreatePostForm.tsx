@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../queries/supabaseClient';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
   const [content, setContent] = useState("");
@@ -9,7 +11,7 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const filePath = `${userId}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from('post-images')
       .upload(filePath, file);
 
@@ -30,25 +32,23 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
     if (imageFile) imageUrl = await uploadImage(imageFile);
     if (errorMessage) {
       setLoading(false);
+      toast.error(errorMessage); // Show error toast for image upload failure
       return; // Stop submission if there's an error with image upload
     }
 
-    // Now use GraphQL mutation to create the post
-    try {
-      await createPost({
-        variables: {
-          userId,
-          content,
-          image_url: imageUrl,
-        },
-      });
+    // Use Supabase client directly to insert a new post into the database
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([{ user_id: userId, content, image_url: imageUrl }]);
 
-      // If the post is successfully created, reset the form
-      alert("Post created successfully!");
+    if (error) {
+      setErrorMessage(`Error creating post: ${error.message}`);
+      toast.error(`Error creating post: ${error.message}`); // Show error toast for post creation failure
+    } else {
+      // Success case
+      toast.success("Post created successfully!"); // Success toast notification
       setContent("");
       setImageFile(null);
-    } catch (error) {
-      setErrorMessage(`Error creating post`);
     }
 
     setLoading(false);
@@ -56,6 +56,8 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      <ToastContainer /> {/* Toast container for displaying notifications */}
+
       <h2 className="text-2xl font-semibold text-center text-blue-600 mb-6">Create a Post</h2>
 
       {errorMessage && (
@@ -94,7 +96,3 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 };
 
 export default CreatePostForm;
-function createPost(arg0: { variables: { userId: string; content: string; image_url: string | null; }; }) {
-  throw new Error('Function not implemented.');
-}
-
