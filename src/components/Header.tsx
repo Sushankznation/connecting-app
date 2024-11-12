@@ -1,5 +1,5 @@
 // src/Header.tsx
-import React from 'react';
+import React,{useState} from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../Auth/hooks';
 import { signOut } from '../Auth/authSlice';

@@ -94,3 +94,7 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 };
 
 export default CreatePostForm;
+function createPost(arg0: { variables: { userId: string; content: string; image_url: string | null; }; }) {
+  throw new Error('Function not implemented.');
+}
+
