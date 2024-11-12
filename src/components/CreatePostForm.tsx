@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { CREATE_POST } from '../queries/queries'; 
 import { supabase } from '../queries/supabaseClient';
 
 const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
@@ -8,9 +6,6 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Mutation to create post
-  const [createPost] = useMutation(CREATE_POST);
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const filePath = `${userId}/${Date.now()}_${file.name}`;
