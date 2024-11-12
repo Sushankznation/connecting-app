@@ -11,7 +11,7 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const filePath = `${userId}/${Date.now()}_${file.name}`;
-    const { data, error } = await supabase.storage
+    const {error } = await supabase.storage
       .from('post-images')
       .upload(filePath, file);
 
