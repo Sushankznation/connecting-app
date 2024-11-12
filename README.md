@@ -1,65 +1,47 @@
-src/
-├── assets/                   # Static assets (images, fonts, etc.)
-│   ├── images/
-│   ├── icons/
-│   └── styles/
-│       └── tailwind.css
-├── components/               # Reusable components (UI elements)
-│   ├── Button.tsx
-│   ├── Navbar.tsx
-│   └── PostCard.tsx
-├── config/                   # Configuration files (API, Firebase, etc.)
-│   ├── apolloClient.ts       # Apollo GraphQL client
-│   └── firebaseConfig.ts     # Firebase configuration
-├── constants/                # App-wide constants
-│   ├── routes.ts             # Route paths
-│   └── actionTypes.ts        # Redux action types
-├── features/                 # Feature-specific logic
-│   ├── auth/
-│   │   ├── components/
-│   │   │   ├── LoginForm.tsx
-│   │   │   └── SignUpForm.tsx
-│   │   ├── services/
-│   │   │   ├── authService.ts  # Firebase Auth logic
-│   │   └── store/
-│   │       └── authSlice.ts    # Redux slice for auth
-│   ├── feed/
-│   │   ├── components/
-│   │   │   ├── NewsFeed.tsx
-│   │   │   └── PostForm.tsx
-│   │   ├── services/
-│   │   │   └── feedService.ts  # GraphQL API calls
-│   │   └── store/
-│   │       └── feedSlice.ts    # Redux slice for feed
-│   └── profile/
-│       ├── components/
-│       │   └── ProfileCard.tsx
-│       ├── services/
-│       │   └── profileService.ts
-│       └── store/
-│           └── profileSlice.ts
-├── hooks/                    # Reusable custom hooks
-│   ├── useAuth.ts            # Hook for authentication logic
-│   ├── useFeed.ts            # Hook for fetching feed data
-│   └── useProfile.ts         # Hook for profile management
-├── layouts/                  # Layout components
-│   ├── AuthLayout.tsx        # Layout for authentication pages
-│   └── MainLayout.tsx        # Layout for main application
-├── pages/                    # Page components
-│   ├── Home.tsx
-│   ├── Login.tsx
-│   └── NewsFeed.tsx
-├── store/                    # Global Redux store configuration
-│   ├── store.ts              # Redux store setup
-│   └── rootReducer.ts        # Combine all reducers
-├── types/                    # TypeScript interfaces and types
-│   ├── userTypes.ts          # User-related types
-│   ├── postTypes.ts          # Post-related types
-│   └── apiResponse.ts        # API response formats
-├── utils/                    # Helper functions
-│   ├── formatDate.ts         # Format dates consistently
-│   ├── validateInput.ts      # Input validation functions
-│   └── logger.ts             # Centralized logging utility
-├── App.tsx                   # Main app entry point
-├── main.tsx                  # Application root
-└── index.css                 # Global styles
+### Connecting App
+A social media application built with React, TypeScript, Supabase (for GraphQL), and styled with Tailwind CSS. This app allows users to log in, create posts, follow/unfollow other users, and view a news feed of posts from people they follow.
+---
+
+## Features
+- User Authentication: Secure sign-up and login via Firebase Auth, AWS Cognito, or Auth0.
+- News Feed: Scrollable feed displaying posts from followed users, fetched using GraphQL.
+- Post Creation: Users can create posts with images and tag other users.
+- Follow/Unfollow Functionality: Allows users to manage their follow lists.
+- Responsive UI: Styled with Tailwind CSS for a modern look and optimal performance across devices.
+- TypeScript for Type Safety: Ensures robust type checking and error prevention.
+---
+## Tech Stack
+- Frontend: React, TypeScript
+- GraphQL API: Supabase
+- Authentication: Supabase auth
+- Styling: Tailwind CSS
+---
+## Hosting: Vercel
+---
+## Installation
+
+1. **Clone the Repository**:
+   ```bash
+   git clone [https://github.com/Sushankznation/Json-Fetcher.git
+   cd Json-Fetcher
+2. **Install Dependencies:**
+   ```bash 
+   npm install
+3. **Run the Application:**
+   ```bash 
+   npm start
+---
+## Setup Supabase:
+
+- Sign up at Supabase and create a new project.
+- In the Supabase dashboard, enable GraphQL and create the necessary tables for users, posts, and follow relationships.
+- Setup Authentication (Firebase/Auth0/Cognito):
+
+- Follow the respective documentation to set up user authentication and obtain API keys.
+- Configure authentication to allow login, signup, and token management.
+---
+## Author
+
+- **Sushant Bherwal**
+  - 📧 Email: [sushantbharwal@gmail.com](mailto:sushantbharwal@gmail.com)
+  - 💼 LinkedIn: [Sushant Bherwal](https://www.linkedin.com/in/sushantbherwal/)
