@@ -1,5 +1,6 @@
-// src/CreatePostForm.tsx
 import React, { useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { CREATE_POST } from '../queries/queries'; 
 import { supabase } from '../queries/supabaseClient';
 
 const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
@@ -8,16 +9,20 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Mutation to create post
+  const [createPost] = useMutation(CREATE_POST);
+
   const uploadImage = async (file: File): Promise<string | null> => {
     const filePath = `${userId}/${Date.now()}_${file.name}`;
-    // const { data, error } = await supabase.storage
-    const {  error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('post-images')
       .upload(filePath, file);
+
     if (error) {
       setErrorMessage(`Error uploading image: ${error.message}`);
       return null;
     }
+
     return supabase.storage.from('post-images').getPublicUrl(filePath).data.publicUrl || null;
   };
 
@@ -33,19 +38,22 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
       return; // Stop submission if there's an error with image upload
     }
 
-    // Use Supabase client directly to insert a new post into the database
-    // const { data, error } = await supabase
-    const {  error } = await supabase
-      .from('posts')
-      .insert([{ user_id: userId, content, image_url: imageUrl }]);
+    // Now use GraphQL mutation to create the post
+    try {
+      await createPost({
+        variables: {
+          userId,
+          content,
+          image_url: imageUrl,
+        },
+      });
 
-    if (error) {
-      setErrorMessage(`Error creating post: ${error.message}`);
-    } else {
-      // Alert on successful post creation
+      // If the post is successfully created, reset the form
       alert("Post created successfully!");
       setContent("");
       setImageFile(null);
+    } catch (error) {
+      setErrorMessage(`Error creating post`);
     }
 
     setLoading(false);
