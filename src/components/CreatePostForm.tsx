@@ -4,7 +4,7 @@ import { useMutation, gql } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// GraphQL mutation
+// Define the GraphQL mutation
 const CREATE_POST = gql`
   mutation CreatePost(
     $userId: UUID!,
@@ -48,7 +48,7 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
       const filePath = `${userId}/${Date.now()}_${safeFileName}`;
 
       // Upload the file to the 'post-images' bucket
-      const { data, error } = await supabase.storage
+      const {  error } = await supabase.storage
         .from('post-images')
         .upload(filePath, file);
 
@@ -90,7 +90,7 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
 
     try {
       // Call the GraphQL mutation to create a post
-      const { data } = await createPost({
+      await createPost({
         variables: {
           userId,
           content,
