@@ -1,7 +1,6 @@
 // src/App.tsx
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 import { useAppDispatch, useAppSelector } from './Auth/hooks';
 import { checkUserSession } from './Auth/authSlice';
 import Auth from './Auth/Auth';
@@ -9,15 +8,6 @@ import NewsFeed from './components/NewsFeed';
 import CreatePostForm from './components/CreatePostForm';
 import Header from './components/Header';
 import ErrorBoundary from './components/ErrorBoundary';
-// import UserList from './UserList';
-
-const client = new ApolloClient({
-  uri: import.meta.env.VITE_SUPABASE_URL + '/graphql/v1', // Replace with your Supabase GraphQL endpoint
-  headers: {
-    apiKey: import.meta.env.VITE_SUPABASE_ANON_KEY, // Use your Supabase anon/public API key
-  },
-  cache: new InMemoryCache(),
-});
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const user = useAppSelector((state) => state.auth.user);
@@ -33,7 +23,6 @@ const App: React.FC = () => {
   }, [dispatch]);
 
   return (
-    <ApolloProvider client={client}>
       <Router>
         <div className="app-container min-h-screen bg-gray-100">
           {user && <Header />}
@@ -77,7 +66,6 @@ const App: React.FC = () => {
           </div>
         </div>
       </Router>
-    </ApolloProvider>
   );
 };
 

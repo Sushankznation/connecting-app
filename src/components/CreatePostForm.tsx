@@ -1,7 +1,35 @@
 import React, { useState } from 'react';
 import { supabase } from '../queries/supabaseClient';
+import { useMutation, gql } from '@apollo/client';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+// GraphQL mutation
+const CREATE_POST = gql`
+  mutation CreatePost(
+    $userId: UUID!,
+    $content: String!,
+    $imageUrl: String
+  ) {
+    insertIntopostsCollection(
+      objects: [
+        {
+          user_id: $userId,
+          content: $content,
+          image_url: $imageUrl
+        }
+      ]
+    ) {
+      records {
+        id
+        user_id
+        content
+        image_url
+        created_at
+      }
+    }
+  }
+`;
 
 const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
   const [content, setContent] = useState("");
@@ -9,54 +37,83 @@ const CreatePostForm: React.FC<{ userId: string }> = ({ userId }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const uploadImage = async (file: File): Promise<string | null> => {
-    const filePath = `${userId}/${Date.now()}_${file.name}`;
-    const { error } = await supabase.storage
-      .from('post-images')
-      .upload(filePath, file);
+  // Use the Apollo `useMutation` hook with the CREATE_POST mutation
+  const [createPost] = useMutation(CREATE_POST);
 
-    if (error) {
-      setErrorMessage(`Error uploading image: ${error.message}`);
+  // Function to upload the image to Supabase Storage
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      // Sanitize the filename to remove spaces and special characters
+      const safeFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+      const filePath = `${userId}/${Date.now()}_${safeFileName}`;
+
+      // Upload the file to the 'post-images' bucket
+      const { data, error } = await supabase.storage
+        .from('post-images')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error("Error details:", error); // Log detailed error information
+        setErrorMessage(`Error uploading image: ${error.message}`);
+        return null;
+      }
+
+      // Get the public URL for the uploaded file
+      const { publicUrl } = supabase.storage.from('post-images').getPublicUrl(filePath).data || {};
+      return publicUrl || null;
+    } catch (err) {
+      console.error("Unexpected error:", err); // Catch unexpected errors
+      setErrorMessage("Unexpected error occurred while uploading image.");
       return null;
     }
-
-    return supabase.storage.from('post-images').getPublicUrl(filePath).data.publicUrl || null;
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setLoading(true);
 
+    // Initialize image URL as null
     let imageUrl = null;
-    if (imageFile) imageUrl = await uploadImage(imageFile);
+    if (imageFile) {
+      // Upload the image file if provided
+      imageUrl = await uploadImage(imageFile);
+    }
+
+    // Stop if there's an error in uploading the image
     if (errorMessage) {
       setLoading(false);
       toast.error(errorMessage); // Show error toast for image upload failure
-      return; // Stop submission if there's an error with image upload
+      return;
     }
 
-    // Use Supabase client directly to insert a new post into the database
-    const { error } = await supabase
-      .from('posts')
-      .insert([{ user_id: userId, content, image_url: imageUrl }]);
+    try {
+      // Call the GraphQL mutation to create a post
+      const { data } = await createPost({
+        variables: {
+          userId,
+          content,
+          imageUrl,
+        },
+      });
 
-    if (error) {
-      setErrorMessage(`Error creating post: ${error.message}`);
-      toast.error(`Error creating post: ${error.message}`); // Show error toast for post creation failure
-    } else {
-      // Success case
+      // Success handling
       toast.success("Post created successfully!"); // Success toast notification
       setContent("");
       setImageFile(null);
+    } catch (error: any) {
+      // Error handling
+      setErrorMessage(`Error creating post: ${error.message}`);
+      toast.error(`Error creating post: ${error.message}`); // Show error toast
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <ToastContainer /> 
+      <ToastContainer />
       <h2 className="text-2xl font-semibold text-center text-blue-600 mb-6">Create a Post</h2>
 
       {errorMessage && (
