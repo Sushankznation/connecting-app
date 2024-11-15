@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../queries/supabaseClient';
+import { InfinitySpin } from 'react-loader-spinner';
 
 interface UserListProps {
   userId: string;
-  onFollowChange: () => void; 
+  onFollowChange: () => void;
 }
 
 interface User {
   id: string;
   username: string;
-  email: string;
   name?: string;
+  email: string;
 }
 
 const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [following, setFollowing] = useState<string[]>([]); // Stores the list of IDs the user is following
+  const [following, setFollowing] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,9 +24,7 @@ const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase
-      .from('users') // Table name as the first argument
-      .select('id, username, name, email'); // Select statement
+    const { data, error } = await supabase.from('users').select('id, username, name, email');
 
     if (error) {
       setError('Error loading users');
@@ -38,7 +37,7 @@ const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
 
   const fetchFollowing = async () => {
     const { data, error } = await supabase
-      .from('follows') // Table name as the first argument
+      .from('follows')
       .select('followed_id')
       .eq('follower_id', userId);
 
@@ -58,7 +57,7 @@ const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
       console.error('Error following user:', error);
     } else {
       setFollowing((prev) => [...prev, followedId]);
-      onFollowChange(); // Trigger the callback to refresh posts
+      onFollowChange();
     }
   };
 
@@ -73,7 +72,7 @@ const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
       console.error('Error unfollowing user:', error);
     } else {
       setFollowing((prev) => prev.filter((id) => id !== followedId));
-      onFollowChange(); // Trigger the callback to refresh posts
+      onFollowChange();
     }
   };
 
@@ -82,8 +81,14 @@ const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
     fetchFollowing();
   }, [userId]);
 
-  if (loading) return <div className="text-center text-xl text-gray-500">Loading users...</div>;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center">
+        <InfinitySpin width="200" color="#4fa94d" />
+      </div>
+    );
+
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md border border-gray-200 mb-6">
@@ -97,7 +102,7 @@ const UserList: React.FC<UserListProps> = ({ userId, onFollowChange }) => {
               </div>
               <div>
                 <p className="font-medium text-lg">{user.name || user.username}</p>
-                <p className="text-sm text-gray-500">{user.email}</p>
+                <p className="text-sm text-gray-500 truncate">{user.email}</p>
               </div>
             </div>
             <div>
